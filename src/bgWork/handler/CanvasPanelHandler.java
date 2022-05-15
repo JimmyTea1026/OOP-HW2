@@ -18,6 +18,7 @@ import bgWork.InitProcess;
 import mod.instance.AssociationLine;
 import mod.instance.BasicClass;
 import mod.instance.CompositionLine;
+import mod.instance.DependencyLine;
 import mod.instance.GeneralizationLine;
 import mod.instance.GroupContainer;
 import mod.instance.UseCase;
@@ -26,6 +27,7 @@ public class CanvasPanelHandler extends PanelHandler
 {
 	Vector <JPanel>	members		= new Vector <>();
 	Vector <JPanel>	selectComp	= new Vector <>();
+	Vector <JPanel>	lineList	= new Vector <>();
 	int				boundShift	= 10;
 
 	public CanvasPanelHandler(JPanel Container, InitProcess process)
@@ -84,6 +86,7 @@ public class CanvasPanelHandler extends PanelHandler
 			case 1:
 			case 2:
 			case 3:
+			case 6:
 				addLine(core.getCurrentFunc(), dp);
 				break;
 			case 4:
@@ -108,11 +111,13 @@ public class CanvasPanelHandler extends PanelHandler
 	{
 		boolean isSelect = false;
 		selectComp = new Vector <>();
+		unhighlightLine();
 		for (int i = 0; i < members.size(); i ++)
 		{
 			if (isInside(members.elementAt(i), e.getPoint()) == true
 					&& isSelect == false)
 			{
+				clickOnPort(members.elementAt(i), e.getPoint());
 				switch (core.isFuncComponent(members.elementAt(i)))
 				{
 					case 0:
@@ -153,6 +158,81 @@ public class CanvasPanelHandler extends PanelHandler
 			}
 		}
 		repaintComp();
+	}
+	void unhighlightLine(){
+		for(JPanel line : this.lineList){
+			switch(core.isLine(line)){
+			case 0:	//association
+				AssociationLine a = (AssociationLine)line;
+				a.unhighlight();
+				break;
+			case 1:	//association
+				CompositionLine c = (CompositionLine)line;
+				c.unhighlight();
+				break;
+			case 2:	//association
+				GeneralizationLine g = (GeneralizationLine)line;
+				g.unhighlight();
+				break;
+			case 3:	//association
+				DependencyLine d = (DependencyLine)line;
+				d.unhighlight();
+				break;
+			}	
+		}
+	}
+	void clickOnPort(JPanel container, Point point){
+		// 檢查點到哪個Port
+		int x = point.x - container.getLocation().x;
+		int y = point.y - container.getLocation().y;
+		int port = -1;
+		switch(core.isClass(container)){
+			case 0:
+				port = ((BasicClass)container).clickedPort(x, y);
+				break;
+			case 1:
+				port = ((UseCase)container).clickedPort(x, y);
+				break;
+		}
+		
+
+		for(JPanel line : this.lineList){
+			switch(core.isLine(line)){
+			case 0:	//association
+				AssociationLine a = (AssociationLine)line;
+				if((container == a.getFromJPanel() && port == a.getFromSide()) ||
+				(container == a.getToJPanel() && port == a.getToSide())){
+					a.highlight();
+					a.repaint();
+				}
+				break;
+			case 1:	//association
+				CompositionLine c = (CompositionLine)line;
+				if((container == c.getFromJPanel() && port == c.getFromSide()) ||
+				(container == c.getToJPanel() && port == c.getToSide())){
+					c.highlight();
+					c.repaint();
+				}
+				break;
+			case 2:	//association
+				GeneralizationLine g = (GeneralizationLine)line;
+				if((container == g.getFromJPanel() && port == g.getFromSide()) ||
+				(container == g.getToJPanel() && port == g.getToSide())){
+					g.highlight();
+					g.repaint();
+				}
+				break;
+			case 3:	//association
+				DependencyLine d = (DependencyLine)line;
+				if((container == d.getFromJPanel() && port == d.getFromSide()) ||
+				(container == d.getToJPanel() && port == d.getToSide())){
+					d.highlight();
+					d.repaint();
+				}
+				break;
+			}
+			
+		}
 	}
 
 	boolean groupIsSelect(GroupContainer container, Point point)
@@ -392,9 +472,13 @@ public class CanvasPanelHandler extends PanelHandler
 					case 2:
 						((GeneralizationLine) funcObj).setConnect(dPack);
 						break;
+					case 3:
+						((DependencyLine) funcObj).setConnect(dPack);
+						break;
 					default:
 						break;
 				}
+				lineList.add(funcObj);
 				contextPanel.add(funcObj, 0);
 				break;
 		}

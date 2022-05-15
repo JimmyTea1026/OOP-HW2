@@ -3,6 +3,7 @@ package mod.instance;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.util.Vector;
 
 import javax.swing.JPanel;
@@ -125,5 +126,29 @@ public class BasicClass extends JPanel implements IFuncComponent, IClassPainter
 		gra.fillRect(this.getWidth() - selectBoxSize,
 				this.getHeight() / 2 - selectBoxSize, selectBoxSize,
 				selectBoxSize * 2);
+	}
+	public int clickedPort(int x, int y)
+	{
+		if( (this.getWidth() / 2 - selectBoxSize) <= x && x <= (this.getWidth() / 2 + selectBoxSize) &&
+		0 <= y && y <= selectBoxSize)//上
+		{
+			return 3;
+		}
+		else if( (this.getWidth() / 2 - selectBoxSize) <= x && x <= (this.getWidth() / 2 + selectBoxSize) &&
+		(this.getHeight() - selectBoxSize) <= y && y <= this.getHeight())//下
+		{
+			return 0;
+		}
+		else if( 0 <= x && x <= selectBoxSize &&
+		this.getHeight() / 2 - selectBoxSize <= y && y <= this.getHeight() / 2 + selectBoxSize)//左
+		{
+			return 1;			
+		}
+		else if( this.getWidth() - selectBoxSize <= x && x <= this.getWidth() &&
+		this.getHeight() / 2 - selectBoxSize <= y && y <= this.getHeight() / 2 + selectBoxSize)//右
+		{
+			return 2;
+		}
+		return -1;
 	}
 }

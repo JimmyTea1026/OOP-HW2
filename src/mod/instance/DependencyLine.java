@@ -4,6 +4,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.BasicStroke;
+import java.awt.Graphics2D;
 
 import javax.swing.JPanel;
 
@@ -14,21 +17,23 @@ import mod.IFuncComponent;
 import mod.ILinePainter;
 import java.lang.Math;
 
-public class AssociationLine extends JPanel
+public class DependencyLine extends JPanel
 		implements IFuncComponent, ILinePainter
 {
-	JPanel				from;
-	int					fromSide;
-	Point				fp				= new Point(0, 0);
-	JPanel				to;
-	int					toSide;
-	Point				tp				= new Point(0, 0);
-	boolean				isSelect		= false;
-	int					selectBoxSize	= 5;
-	CanvasPanelHandler	cph;
+	public JPanel				from;
+	public int					fromSide;
+	public Point				fp				= new Point(0, 0);
+	public JPanel				to;
+	public int					toSide;
+	public Point				tp				= new Point(0, 0);
+	public int					arrowSize		= 6;
+	public int					panelExtendSize	= 10;
+	public boolean				isSelect		= false;
+	public int					selectBoxSize	= 5;
+	public CanvasPanelHandler	cph;
 	private Boolean highlight = false;
 
-	public AssociationLine(CanvasPanelHandler cph)
+	public DependencyLine(CanvasPanelHandler cph)
 	{
 		this.setOpaque(false);
 		this.setVisible(true);
@@ -39,8 +44,12 @@ public class AssociationLine extends JPanel
 	@Override
 	public void paintComponent(Graphics g)
 	{
+        Graphics2D g2d = (Graphics2D) g.create();
 		Point fpPrime;
 		Point tpPrime;
+        float[] dash1 = {2f, 0f, 2f};
+        BasicStroke bs1 = new BasicStroke(1, BasicStroke.CAP_BUTT,
+                BasicStroke.JOIN_ROUND, 1.0f, dash1, 2f);
 		renewConnect();
 		fpPrime = new Point(fp.x - this.getLocation().x,
 				fp.y - this.getLocation().y);
@@ -52,7 +61,8 @@ public class AssociationLine extends JPanel
 		else{
 			g.setColor(Color.BLACK);
 		}
-		g.drawLine(fpPrime.x, fpPrime.y, tpPrime.x, tpPrime.y);
+        g2d.setStroke(bs1);
+		g2d.drawLine(fpPrime.x, fpPrime.y, tpPrime.x, tpPrime.y);
 		paintArrow(g, tpPrime);
 		if (isSelect == true)
 		{
@@ -63,16 +73,31 @@ public class AssociationLine extends JPanel
 	@Override
 	public void reSize()
 	{
-		Dimension size = new Dimension(Math.abs(fp.x - tp.x) + 10,
-				Math.abs(fp.y - tp.y) + 10);
+		Dimension size = new Dimension(
+				Math.abs(fp.x - tp.x) + panelExtendSize * 2,
+				Math.abs(fp.y - tp.y) + panelExtendSize * 2);
 		this.setSize(size);
-		this.setLocation(Math.min(fp.x, tp.x) - 5, Math.min(fp.y, tp.y) - 5);
+		this.setLocation(Math.min(fp.x, tp.x) - panelExtendSize,
+				Math.min(fp.y, tp.y) - panelExtendSize);
 	}
 
 	@Override
 	public void paintArrow(Graphics g, Point point)
 	{
-		// TODO Auto-generated method stub
+        Point start = new Point(fp.x - this.getLocation().x,
+				fp.y - this.getLocation().y);
+        float arrowAngle = 60;
+        float arrowLength = 10;
+		double vecLen = Math.sqrt(Math.pow((point.x - start.x), 2) + Math.pow((point.y - start.y), 2));
+        double radiant = Math.toRadians(90 + arrowAngle);
+        double vecX = (double)(point.x - start.x) / vecLen;
+        double vecY = (double)(point.y - start.y) / vecLen;
+        int x1 = point.x + (int)(arrowLength * (vecX*Math.cos(radiant) - vecY*Math.sin(radiant)));
+        int y1 = point.y + (int)(arrowLength * (vecX*Math.sin(radiant) + vecY*Math.cos(radiant)));
+        int x2 = point.x + (int)(arrowLength * (vecX*Math.cos(-radiant) - vecY*Math.sin(-radiant)));
+        int y2 = point.y + (int)(arrowLength * (vecX*Math.sin(-radiant) + vecY*Math.cos(-radiant)));
+        g.drawLine(point.x, point.y, x1, y1);
+        g.drawLine(point.x, point.y, x2, y2);
 	}
 
 	@Override
@@ -140,9 +165,12 @@ public class AssociationLine extends JPanel
 	@Override
 	public void paintSelect(Graphics gra)
 	{
-		gra.setColor(Color.BLACK);
-		gra.fillRect(fp.x, fp.y, selectBoxSize, selectBoxSize);
-		gra.fillRect(tp.x, tp.y, selectBoxSize, selectBoxSize);
+		gra.setColor(Color.RED);
+		Point fpPrime = new Point(fp.x - this.getLocation().x,
+				fp.y - this.getLocation().y);
+		Point tpPrime = new Point(tp.x - this.getLocation().x,
+				tp.y - this.getLocation().y);
+		gra.drawLine(fpPrime.x, fpPrime.y, tpPrime.x, tpPrime.y);
 	}
 
 	public boolean isSelect()
@@ -154,6 +182,7 @@ public class AssociationLine extends JPanel
 	{
 		this.isSelect = isSelect;
 	}
+
 	public JPanel getFromJPanel(){
 		return this.from;
 	}
@@ -169,6 +198,7 @@ public class AssociationLine extends JPanel
 	public int getToSide(){
 		return this.toSide;
 	}
+	
 	public void highlight()
 	{
 		this.highlight = true;

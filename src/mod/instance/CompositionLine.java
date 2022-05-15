@@ -29,6 +29,7 @@ public class CompositionLine extends JPanel
 	boolean				isSelect		= false;
 	int					selectBoxSize	= 5;
 	CanvasPanelHandler	cph;
+	private Boolean highlight = false;
 
 	public CompositionLine(CanvasPanelHandler cph)
 	{
@@ -48,7 +49,12 @@ public class CompositionLine extends JPanel
 				fp.y - this.getLocation().y);
 		tpPrime = new Point(tp.x - this.getLocation().x,
 				tp.y - this.getLocation().y);
-		g.setColor(Color.BLACK);
+		if(highlight){
+			g.setColor(Color.red);
+		}
+		else{
+			g.setColor(Color.BLACK);
+		}
 		g.drawLine(fpPrime.x, fpPrime.y, tpPrime.x, tpPrime.y);
 		paintArrow(g, tpPrime);
 		if (isSelect == true)
@@ -160,5 +166,28 @@ public class CompositionLine extends JPanel
 	public void setSelect(boolean isSelect)
 	{
 		this.isSelect = isSelect;
+	}
+	public JPanel getFromJPanel(){
+		return this.from;
+	}
+
+	public JPanel getToJPanel(){
+		return this.to;
+	}
+
+	public int getFromSide(){
+		return this.fromSide;
+	}
+
+	public int getToSide(){
+		return this.toSide;
+	}
+	public void highlight()
+	{
+		this.highlight = true;
+	}
+	public void unhighlight()
+	{
+		this.highlight = false;
 	}
 }
